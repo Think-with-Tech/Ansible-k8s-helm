@@ -9,7 +9,7 @@ variable "key" {
 
 variable "namespace" {
   type    = string
-  default = "dev"
+  default = "prod"
 }
 variable "subnet" {
   type    = string
