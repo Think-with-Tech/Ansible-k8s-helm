@@ -10,7 +10,7 @@ resource "aws_instance" "ans" {
     Name = "Ansible"
   }
  root_block_device {
-    volume_size = 20 # Size of the root volume in GB
+    volume_size = 25 # Size of the root volume in GB
 
   }
 }
