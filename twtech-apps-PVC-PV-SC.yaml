@@ -1,3 +1,36 @@
+
+# create a persistent volume (pv) using hostpath
+# mongo-pv-hostpath.yml    
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: twtech-pv-hostpath
+  labels:
+    type: local
+spec:
+  storageClassName: twtech-sc
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/kube"
+---
+# Mongo db pod with PVC
+# create pvc for mongodb
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: twtech-pv-hostpath
+spec:
+  storageClassName: twtech-sc
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+
 # create applications
 # twtech-springapp
 kind: Deployment
@@ -41,20 +74,7 @@ spec:
     targetPort: 8080                                                                                                                            
     nodePort: 31400                                                                                                                                        
 ---
-# Mongo db pod with PVC
-# create pvc for mongodb
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: twtech-pv-hostpath
-spec:
-  storageClassName: twtech-sc
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
----
+
 # create the mongoDB (pod) based on the pvc created
 # mongo-db-pod-with-pvc.yml
 apiVersion: apps/v1
@@ -100,23 +120,7 @@ spec:
   - port: 27017                                                                                                                   
     targetPort: 27017    
 ---
-# create a persistent volume (pv) using hostpath
-# mongo-pv-hostpath.yml    
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: twtech-pv-hostpath
-  labels:
-    type: local
-spec:
-  storageClassName: twtech-sc
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteOnce
-  hostPath:
-    path: "/kube"
----
+
 #twtechapp
 apiVersion: apps/v1
 kind: Deployment
