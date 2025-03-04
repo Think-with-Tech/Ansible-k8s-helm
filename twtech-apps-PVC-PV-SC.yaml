@@ -1,0 +1,155 @@
+# create applications
+# twtech-springapp
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: twtech-springapp
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: springapp
+  template:
+    metadata:
+      labels:
+        app: springapp
+    spec:
+      containers:
+      - name: springapp
+        image:   devopspatemf2021/twtech:twtech-spring-boot-mongo
+        env:
+        - name:  MONGO_DB_HOSTNAME
+          value:  mongosvc
+        - name:  MONGO_DB_USERNAME
+          value:  twtechdb                                                                                                                         
+        - name:  MONGO_DB_PASSWORD                                                                                                              
+          value:  twt123                                                                                                                       
+        ports:                                                                                                                                  
+        - containerPort: 8080                                                                                                                   
+---        
+# twtech-springapp-service                                                                                                                                     
+kind: Service                                                                                                                                   
+apiVersion: v1                                                                                                                                  
+metadata:                                                                                                                                       
+  name: twtech-springappsvc                                                                                                                        
+spec:                                                                                                                                           
+  selector:                                                                                                                                     
+    app: springapp                                                                                                                              
+  type: NodePort                                                                                                                                
+  ports:                                                                                                                                        
+  - port: 80                                                                                                                                    
+    targetPort: 8080                                                                                                                            
+    nodePort: 31400                                                                                                                                        
+---
+# Mongo db pod with PVC
+# create pvc for mongodb
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: twtech-pv-hostpath
+spec:
+  storageClassName: twtech-sc
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+# create the mongoDB (pod) based on the pvc created
+# mongo-db-pod-with-pvc.yml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: mongo-rs
+spec:
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+     metadata:
+       name: mongodbpod
+       labels:
+         app: mongo
+     spec:
+       volumes:
+       - name: mongodb-pvc
+         persistentVolumeClaim:
+           claimName: twtech-pv-hostpath
+       containers:
+       - name: mongodbcontainer
+         image: mongo
+         ports:
+         - containerPort: 27017
+         env:
+         - name: MONGO_INITDB_ROOT_USERNAME
+           value: twtechdb
+         - name: MONGO_INITDB_ROOT_PASSWORD
+           value: twt123
+         volumeMounts:
+         - name: mongodb-pvc
+           mountPath: /data/db
+---                                                                                                                               
+kind: Service                                                                                                                     
+apiVersion: v1                                                                                                                    
+metadata:                                                                                                                         
+  name: mongosvc                                                                                                                 
+spec:                                                                                                                             
+  selector:                                                                                                                       
+    app: mongo                                                                                                                    
+  ports:                                                                                                                          
+  - port: 27017                                                                                                                   
+    targetPort: 27017    
+---
+# create a persistent volume (pv) using hostpath
+# mongo-pv-hostpath.yml    
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: twtech-pv-hostpath
+  labels:
+    type: local
+spec:
+  storageClassName: twtech-sc
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/kube"
+---
+#twtechapp
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: twtechapp
+  labels:
+    app: app
+spec:
+  replicas: 2  # Number of desired pods
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+    spec:
+      containers:
+      - name: myapp-container
+        image: devopspatemf2021/webapps:version-1.9                # devopspatemf2021/twtech-web-app:twtech-web-app  
+        ports:
+        - containerPort: 8080
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: twtechsvc
+spec:
+  type: NodePort               
+  selector:
+    app: app 
+  ports: 
+  - port: 80
+    targetPort: 8080
+    nodePort: 31200 
+   
