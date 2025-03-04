@@ -1,5 +1,5 @@
 #!/bin/bash
-# This manifest file woould provision, pvc. pv, sc, twtech-springapp, twtech-webapp, and svc
+# This manifest file would provision, pvc. pv, sc, twtech-springapp, twtech-webapp, and svc
 # create a persistent volume (pv) using hostpath
 # mongo-pv-hostpath.yml    
 apiVersion: v1
